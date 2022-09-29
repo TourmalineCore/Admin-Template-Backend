@@ -66,10 +66,57 @@ app.get(`/`, (req, res) => {
     res.send(`Hello World!`)
 });
 
-app.get(`/table`, () => {
+app.get(`/table`, (req, res) => {
     res.send(dataTable);
+});
+
+app.post(`/table`, (req, res) => {
+  let data = [...dataTable];
+  
+  if (req.query.orderingDirection === 'desc') {
+    data.sort((a, b) => a[req.query.orderBy] < b[req.query.orderBy] ? 1 : -1);
+  } else {
+    data.sort((a, b) => a[req.query.orderBy] > b[req.query.orderBy] ? 1 : -1);
+  }
+
+  if (req.query.filteredByColumns) {
+    data = filtration(data, req.query.filteredByColumns, req.query.filteredByValues);
+  }
+
+  res.send({
+    draw: Number(req.query.draw),
+    list: data, 
+    totalCount: data.length,
+  });
 });
 
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}. Available at http://localhost:5000`)
 });
+
+
+function filtration(data, option, value) {
+  let result =  [...data];
+
+  if (typeof option === 'string') {
+    result = filter(data, option, value);
+
+    return result;
+  }
+
+  for (let i = 0; i < option.length; i++) {
+    result = filter(result, option[i], value[i]);
+  }
+
+  return result;
+}
+
+function filter(data, option, value) {
+  let result = [];
+
+  for (const item of data) {
+    if (String(item[option]).toLowerCase().includes(value.toLowerCase()) == true) result.push(item);
+  }
+
+  return result;
+}
