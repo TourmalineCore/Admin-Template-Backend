@@ -5,8 +5,9 @@ const bodyParser = require(`body-parser`);
 const app = express();
 const PORT = 5000;
 
-const dataTable = [
+const employees = [
   {
+    id: 1,
     actualSales: 5096606.9,
     employee: 'Employee 1',
     calculatedBonus: 2774.4,
@@ -17,6 +18,7 @@ const dataTable = [
     someType: 'firstType',
   },
   {
+    id: 2,
     actualSales: 21455221.56,
     employee: 'Employee 2',
     calculatedBonus: 7507.2,
@@ -27,6 +29,7 @@ const dataTable = [
     someType: 'secondType',
   },
   {
+    id: 3,
     actualSales: 7709519.93,
     employee: 'Employee 3',
     calculatedBonus: 36755.2,
@@ -37,6 +40,7 @@ const dataTable = [
     someType: 'firstType',
   },
   {
+    id: 4,
     actualSales: 12931847.81,
     employee: 'Employee 4',
     calculatedBonus: 36480,
@@ -47,6 +51,7 @@ const dataTable = [
     someType: 'secondType',
   },
   {
+    id: 5,
     actualSales: 14931847,
     employee: 'Employee 5',
     calculatedBonus: 66480,
@@ -62,16 +67,8 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-app.get(`/`, (req, res) => {
-    res.send(`Hello World!`)
-});
-
-app.get(`/table`, (req, res) => {
-    res.send(dataTable);
-});
-
-app.post(`/table`, (req, res) => {
-  let data = [...dataTable];
+app.post(`/employee-table`, (req, res) => {
+  let data = [...employees];
   
   if (req.query.orderingDirection === 'desc') {
     data.sort((a, b) => a[req.query.orderBy] < b[req.query.orderBy] ? 1 : -1);
@@ -95,18 +92,18 @@ app.listen(PORT, () => {
 });
 
 
-function filtration(data, option, value) {
+function filtration(data, options, values) {
   let result =  [...data];
 
-  if (typeof option === 'string') {
-    result = filter(data, option, value);
+  if (typeof options === 'string') {
+    result = filter(data, options, values);
 
     return result;
   }
 
-  for (let i = 0; i < option.length; i++) {
-    result = filter(result, option[i], value[i]);
-  }
+  options.forEach((option, index) => {
+    result = filter(result, option, values[index]);
+  });
 
   return result;
 }
@@ -114,9 +111,9 @@ function filtration(data, option, value) {
 function filter(data, option, value) {
   let result = [];
 
-  for (const item of data) {
+  data.forEach((item) => {
     if (String(item[option]).toLowerCase().includes(value.toLowerCase()) == true) result.push(item);
-  }
+  });
 
   return result;
 }
